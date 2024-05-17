@@ -30,6 +30,14 @@ async function run() {
         const database = client.db("cravio");
         const foodCollection = database.collection("foods");
 
+        app.get('/available-foods', async(req, res) =>{
+            const {availability} = req.query;
+            const query = {status : availability}
+            const result = await foodCollection.find(query).toArray();
+            res.send(result);
+            // console.log(availability);
+        })
+
         app.post('/add-food', async(req, res) => {
             const foodDetails = req.body;
             console.log(foodDetails);

@@ -31,46 +31,58 @@ async function run() {
         const foodCollection = database.collection("foods");
         const requestFoodCollection = database.collection('requestedFood');
         //---ok
-        app.get('/available-foods', async(req, res) =>{
-            const {availability} = req.query;
-            const query = {status : availability}
+        app.get('/available-foods', async (req, res) => {
+            const { availability } = req.query;
+            console.log(availability)
+            const query = { status: availability }
             const result = await foodCollection.find(query).toArray();
             res.send(result);
             // console.log(availability);
         })
         //---ok
-        app.get('/food/:id', async(req, res) =>{
+        app.get('/food/:id', async (req, res) => {
             const id = req.params.id;
             // console.log('food',id);
-            const query = {_id : new ObjectId(id)}
+            const query = { _id: new ObjectId(id) }
             const result = await foodCollection.findOne(query);
             // console.log(id);
             res.send(result);
         })
+        app.get('/manage-food', async (req, res) => {
+            const userEmail = req.query.email;
+            const query = { donatorEmail: userEmail }
+            console.log(userEmail)
+            const result = await foodCollection.find(query).toArray();
+            res.send(result);
+        })
+
         //---ok
-        app.post('/add-food', async(req, res) => {
+        app.get('/requested-food', async (req, res) => {
+            const userEmail = req.query.email;
+            const query = { donatorEmail: userEmail }
+            // console.log(userEmail)
+            const result = await requestFoodCollection.find(query).toArray();
+            res.send(result);
+        })
+
+        // ---ok
+        app.post('/request-food', async (req, res) => {
+            const foodDetails = req.body;
+            const result = await requestFoodCollection.insertOne(foodDetails);
+            res.send(result);
+        })
+        //---ok
+        app.post('/add-food', async (req, res) => {
             const foodDetails = req.body;
             // console.log(foodDetails);
             const result = await foodCollection.insertOne(foodDetails);
             res.send(result);
         })
-        //---ok
-        app.get('/requested-food', async(req, res) =>{
-            const result = await requestFoodCollection.find().toArray();
-            res.send(result);
-        })
-
         // ---ok
-        app.post('/request-food', async(req, res) =>{
-            const foodDetails = req.body;
-            const result = await requestFoodCollection.insertOne(foodDetails);
-            res.send(result);
-        })
-        // ---ok
-        app.delete('/delete-food/:id', async(req, res) =>{
+        app.delete('/delete-food/:id', async (req, res) => {
             const id = req.params.id;
             // console.log('deleted',id);
-            const query = {_id : new ObjectId(id)}
+            const query = { _id: new ObjectId(id) }
             const result = await foodCollection.deleteOne(query);
             res.send(result);
         })

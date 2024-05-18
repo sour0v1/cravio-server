@@ -26,11 +26,11 @@ const client = new MongoClient(uri, {
 async function run() {
     try {
         // Connect the client to the server	(optional starting in v4.7)
-        // await client.connect();
+        await client.connect();
         const database = client.db("cravio");
         const foodCollection = database.collection("foods");
         const requestFoodCollection = database.collection('requestedFood');
-
+        // ---ok
         app.get('/available-foods', async(req, res) =>{
             const {availability} = req.query;
             const query = {status : availability}
@@ -38,14 +38,16 @@ async function run() {
             res.send(result);
             // console.log(availability);
         })
-        app.get('/:id', async(req, res) =>{
+        // ---ok
+        app.get('/food/:id', async(req, res) =>{
             const id = req.params.id;
+            console.log('food',id);
             const query = {_id : new ObjectId(id)}
             const result = await foodCollection.findOne(query);
-            console.log(id);
+            // console.log(id);
             res.send(result);
         })
-        // for added food
+        // for added food---ok
         app.post('/add-food', async(req, res) => {
             const foodDetails = req.body;
             // console.log(foodDetails);
@@ -53,6 +55,12 @@ async function run() {
             res.send(result);
         })
         // for request food
+        // app.get('/requested-food', async(req, res) =>{
+        //     const result = await requestFoodCollection.find().toArray();
+        //     res.send(result);
+        // })
+
+        // ---ok
         app.post('/request-food', async(req, res) =>{
             const foodDetails = req.body;
             const result = await requestFoodCollection.insertOne(foodDetails);
@@ -60,13 +68,13 @@ async function run() {
         })
         app.delete('/delete-food/:id', async(req, res) =>{
             const id = req.params.id;
+            console.log('deleted',id);
             const query = {_id : new ObjectId(id)}
             const result = await foodCollection.deleteOne(query);
-            // console.log('hello',id);
             res.send(result);
         })
         // Send a ping to confirm a successful connection
-        // await client.db("admin").command({ ping: 1 });
+        await client.db("admin").command({ ping: 1 });
         console.log("Pinged your deployment. You successfully connected to MongoDB!");
     } finally {
         // Ensures that the client will close when you finish/error

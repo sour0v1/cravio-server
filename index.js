@@ -29,6 +29,7 @@ async function run() {
         // await client.connect();
         const database = client.db("cravio");
         const foodCollection = database.collection("foods");
+        const requestFoodCollection = database.collection('requestedFood');
 
         app.get('/available-foods', async(req, res) =>{
             const {availability} = req.query;
@@ -38,17 +39,30 @@ async function run() {
             // console.log(availability);
         })
         app.get('/:id', async(req, res) =>{
-            const id = req.params;
+            const id = req.params.id;
             const query = {_id : new ObjectId(id)}
-            const result = await foodCollection.find(query).toArray();
+            const result = await foodCollection.findOne(query);
             console.log(id);
             res.send(result);
         })
-
+        // for added food
         app.post('/add-food', async(req, res) => {
             const foodDetails = req.body;
             // console.log(foodDetails);
             const result = await foodCollection.insertOne(foodDetails);
+            res.send(result);
+        })
+        // for request food
+        app.post('/request-food', async(req, res) =>{
+            const foodDetails = req.body;
+            const result = await requestFoodCollection.insertOne(foodDetails);
+            res.send(result);
+        })
+        app.delete('/delete-food/:id', async(req, res) =>{
+            const id = req.params.id;
+            const query = {_id : new ObjectId(id)}
+            const result = await foodCollection.deleteOne(query);
+            // console.log('hello',id);
             res.send(result);
         })
         // Send a ping to confirm a successful connection

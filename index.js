@@ -57,17 +57,18 @@ async function run() {
         })
         app.put('/food/update', async(req, res) =>{
             const food = req.body;
+            console.log(food)
             // const id = req.params.id;
             // const options = { upsert: false };
             // const filter = {_id : new ObjectId(id)}
-            const filter = { _id: new ObjectId(`${food._id}`) }
+            const filter = { _id: new ObjectId(`${food.id}`) }
             const updatedFood = {
                 $set : {
-                    foodName : food.upFoodName,
-                    foodImg : food.upFoodImg,
-                    foodQuantity : food.upFoodQuantity,
-                    date : food.upDate,
-                    notes : food.upNotes
+                    foodName : food.fname,
+                    foodImg : food.fImage,
+                    foodQuantity : food.fQuantity,
+                    date : food.eDate,
+                    notes : food.note
                 }
             }
             const result = await foodCollection.updateOne(filter,updatedFood);

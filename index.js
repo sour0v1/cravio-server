@@ -33,7 +33,7 @@ async function run() {
         //---ok
         app.get('/available-foods', async (req, res) => {
             const { availability } = req.query;
-            console.log(availability)
+            // console.log(availability)
             const query = { status: availability }
             const result = await foodCollection.find(query).toArray();
             res.send(result);
@@ -48,19 +48,18 @@ async function run() {
             // console.log(id);
             res.send(result);
         })
+        // ---ok
         app.get('/manage-food', async (req, res) => {
             const userEmail = req.query.email;
             const query = { donatorEmail: userEmail }
-            console.log(userEmail)
+            // console.log(userEmail)
             const result = await foodCollection.find(query).toArray();
             res.send(result);
         })
+        // ---ok
         app.put('/food/update', async(req, res) =>{
             const food = req.body;
             console.log(food)
-            // const id = req.params.id;
-            // const options = { upsert: false };
-            // const filter = {_id : new ObjectId(id)}
             const filter = { _id: new ObjectId(`${food.id}`) }
             const updatedFood = {
                 $set : {
@@ -68,7 +67,8 @@ async function run() {
                     foodImg : food.fImage,
                     foodQuantity : food.fQuantity,
                     date : food.eDate,
-                    notes : food.note
+                    notes : food.note,
+                    location : food.pLocation
                 }
             }
             const result = await foodCollection.updateOne(filter,updatedFood);
@@ -78,7 +78,7 @@ async function run() {
         //---ok
         app.get('/requested-food', async (req, res) => {
             const userEmail = req.query.email;
-            const query = { donatorEmail: userEmail }
+            const query = { email: userEmail }
             // console.log(userEmail)
             const result = await requestFoodCollection.find(query).toArray();
             res.send(result);

@@ -12,7 +12,7 @@ const port = process.env.PORT || 5000;
 app.use(express.json());
 app.use(cookieParser());
 app.use(cors({
-    origin: ['http://localhost:5173'],
+    origin: ['http://localhost:5173', 'https://cravio-client.web.app', 'https://cravio-client.firebaseapp.com'],
     credentials: true
 }));
 
@@ -31,7 +31,7 @@ const client = new MongoClient(uri, {
 // step 5
 const verifyToken = (req, res, next) => {
     const token = req.cookies?.token;
-    console.log('tokennn -',token);
+    // console.log('tokennn -',token);
     if (!token) {
         return res.status(401).send({ message: 'unauthorized' })
     }
@@ -54,11 +54,16 @@ const verifyUser = (req, res, next) => {
     next();
 }
 // finally use middleware in the api
+const cookieOptions = {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production' ? true : false,
+    sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'strict'
+}
 
 async function run() {
     try {
         // Connect the client to the server	(optional starting in v4.7)
-        await client.connect();
+        // await client.connect();
         const database = client.db("cravio");
         const foodCollection = database.collection("foods");
         const requestFoodCollection = database.collection('requestedFood');
@@ -68,15 +73,11 @@ async function run() {
         // step 1
         app.post('/jwt', async (req, res) => {
             const user = req.body;
-            console.log(user);
+            // console.log(user);
             const token = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, {
                 expiresIn: '1h'
             })
-            res.cookie('token', token, {
-                httpOnly: true,
-                secure: true,
-                sameSite: 'None'
-            })
+            res.cookie('token', token, cookieOptions)
             res.send({ success: true });
         })
         // api to remove token from cookie
@@ -84,12 +85,7 @@ async function run() {
         app.post('/remove-token', async (req, res) => {
             const user = req.body;
             // console.log('user - ', user)
-            res.clearCookie('token', {
-                httpOnly: true,
-                secure: true,
-                sameSite: true,
-                maxAge: 0
-            })
+            res.clearCookie('token', {...cookieOptions, maxAge : 0})
             res.send({ success: true })
         })
         //---ok
@@ -121,7 +117,7 @@ async function run() {
         // ---ok
         app.put('/food/update', verifyToken, async (req, res) => {
             const food = req.body;
-            console.log(food)
+            // console.log(food)
             const filter = { _id: new ObjectId(`${food.id}`) }
             const updatedFood = {
                 $set: {
@@ -135,7 +131,7 @@ async function run() {
             }
             const result = await foodCollection.updateOne(filter, updatedFood);
             res.send(result);
-            console.log(updatedFood);
+            // console.log(updatedFood);
         })
         //---ok
         app.get('/requested-food', verifyToken, verifyUser, async (req, res) => {
@@ -164,13 +160,13 @@ async function run() {
         // ---ok
         app.delete('/delete-food/:id', verifyToken, async (req, res) => {
             const id = req.params.id;
-            console.log('deleted',id);
+            // console.log('deleted',id);
             const query = { _id: new ObjectId(id) }
             const result = await foodCollection.deleteOne(query);
             res.send(result);
         })
         // Send a ping to confirm a successful connection
-        await client.db("admin").command({ ping: 1 });
+        // await client.db("admin").command({ ping: 1 });
         console.log("Pinged your deployment. You successfully connected to MongoDB!");
     } finally {
         // Ensures that the client will close when you finish/error
